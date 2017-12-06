@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Marvel</title>
+    <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+        margin: 10px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Marvel Character Search</h1>
+        <form id="marvel-form">
+            <label for="marvel-input">Search Marvel Character</label>
+            <input type="text" id="marvel-input">
+            <br>
+            <!-- Button triggers new character to be added -->
+            <input id="add-marvel" type="submit" value="Add a Marvel Character">
+        </form>
+        <!-- Movies will Get Dumped Dere -->
+        <div id="marvels-view"></div>
+        <!-- Rendered Buttons will get Dumped Here  -->
+        <div id="buttons-view"></div>
+        <div id="images"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script type="text/javascript">
+        // Initial array of movies
+        var marvels = ["Black Widow", "Hulk", "Wonder Women", "Ironman", "Thor"];
+
+        function renderButtons() {
+
+            // Delets the character prior to adding new character, otherwise you will have repeat buttons)
+
+            $("#buttons-view").empty();
+
+            // Looping through the array of characters
+            for (var i = 0; i < marvels.length; i++) {
+
+                // Then dynamicaly generating buttons for each character in the array
+                // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
+                var a = $("<button>");
+                // Adding a class of marvel to our button
+                a.addClass("marvel");
+
+                a.attr("data-name", marvels[i]);
+                // Providing the initial button text
+                a.text(marvels[i]);
+
+                a.on("click", function() {
+                    console.log("button " + $(this).data('name') + " clicked")
+                    displayMarvelInfo($(this).data('name'));
+                });
+
+                // Adding the button to the buttons-view div
+                $("#buttons-view").append(a);
+
+            }
+        }
+        // displayMovieInfo function re-renders the HTML to display the appropriate content
+        function displayMarvelInfo(marvel) {
+
+            var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + marvel + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+            // Creating an AJAX call for the specific marvel button being clicked
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).done(function(response) {
+
+
+                for (var i = 0; i < response.data.length; i++) {
+                    var result = response.data[i];
+
+
+                    console.log(result);
+
+
+                    //Attempt to add images to html
+
+                    var imageUrl = result.images.original.url;
+
+                    var marvelImage = $("<img>");
+
+                    marvelImage.attr("src", imageUrl);
+                    marvelImage.attr("alt", "marvel image");
+                    marvelImage.attr("data-still", result.images.original_still.url)
+                    marvelImage.attr("data-animate", imageUrl);
+                    marvelImage.attr("data-name", "animate");
+
+                    marvelImage.on("click", function() {
+                        // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+                        var name = $(this).attr("data-name");
+                        // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+                        // Then, set the image's data-state to animate
+                        // Else set src to the data-still value
+                        if (name === "still") {
+                            $(this).attr("src", $(this).attr("data-animate"));
+                            $(this).attr("data-name", "animate");
+                        } else {
+                            $(this).attr("src", $(this).attr("data-still"));
+                            $(this).attr("data-name", "still");
+                        }
+                    });
+
+                    $("#images").prepend(marvelImage);
+
+                }
+            });
+
+        }
+
+        // Function for displaying character data
+        // handles buttons being clicked
+        $("#add-marvel").on("click", function(event) {
+            event.preventDefault();
+            // This line grabs the input from the textbox
+            var marvel = $("#marvel-input").val().trim();
+
+            // Adds character from the textbox to our array
+            marvels.push(marvel);
+
+            // Calling renderButtons which handles the processing of our marvel array
+            renderButtons();
+        });
+
+        // Calling the renderButtons function to display the intial buttons
+        renderButtons();
+        </script>
+    </div>
+</body>
+
+</html>
